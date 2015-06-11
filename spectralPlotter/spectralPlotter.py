@@ -41,22 +41,22 @@ class spectralPlotter:
         if pht:
             self.phtFig = plt.figure(phtNum)
             self.phtAx = self.phtFig.add_subplot(111)
-            self.phtAx.set_xlabel("Energy (keV)")
-            self.phtAx.set_ylabel(r"Flux (photons s$^{-1}$ cm$^{-2}$ keV$^{-1}$)")
+            self.phtAx.set_xlabel("Energy [keV]")
+            self.phtAx.set_ylabel(r"Flux [photons s$^{-1}$ cm$^{-2}$ keV$^{-1}$]")
 
         if energy:
             self.energyFig = plt.figure(eneNum)
             self.energyAx = self.energyFig.add_subplot(111)
         
-            self.energyAx.set_xlabel("Energy (keV)")
-            self.energyAx.set_ylabel("$F_E$ (erg s$^{-1}$ cm$^{-2}$ keV$^{-1}$)")
+            self.energyAx.set_xlabel("Energy [keV]")
+            self.energyAx.set_ylabel("$F_E$ [erg s$^{-1}$ cm$^{-2}$ keV$^{-1}$]")
 
 
         if vFv:
             self.vFvFig = plt.figure(vFvNum)
             self.vFvAx = self.vFvFig.add_subplot(111)
-            self.vFvAx.set_xlabel("Energy (keV)")
-            self.vFvAx.set_ylabel(r"$\nu F_{\nu}$ (erg$^2$ s$^{-1}$ cm$^{-2}$ keV$^{-1}$)")
+            self.vFvAx.set_xlabel("Energy [keV]")
+            self.vFvAx.set_ylabel(r"$\nu F_{\nu}$ [erg$^2$ s$^{-1}$ cm$^{-2}$ keV$^{-1}$]")
 
 
         if manualColor != None:
