@@ -17,7 +17,7 @@ def filt_neg_err(y, yerr, set_ymin=1e-6):
 class funcFitter2D(funcFitter):
 
 
-    def __init__(self, dataLog=None, rDisp=False,silent=False):
+    def __init__(self, dataLog='None', rDisp=False,silent=False):
 
 
         self.silent=silent
@@ -60,8 +60,8 @@ class funcFitter2D(funcFitter):
         self.dataMin = self.xData.min()
         self.dataMax = self.xData.max()
         
-        if self.dataLog == None:
-            self.dataLog="No"
+        if self.dataLog == "None":
+            #self.dataLog="No"
             self.xData = self.xData/self.pivot
            # self.xErr = self.xErr/self.pivot
             return
@@ -103,7 +103,7 @@ class funcFitter2D(funcFitter):
         if self.fixed[1]==1.:
             fixint=True
 
-        if self.dataLog == None:
+        if self.dataLog == 'None':
             resultAx.errorbar(self.xData,self.yData,fmt=self.dataMarker, color=self.dataColor,yerr=self.yErr,xerr=self.xErr,elinewidth=self.errorbarThick)
         
         
@@ -162,8 +162,9 @@ class funcFitter2D(funcFitter):
         self.result=array(self.result)
 
 
-        if self.dataLog == None:
-            #resultAx.errorbar(self.xData,self.yData,fmt=self.dataMarker, color=self.dataColor,yerr=self.yErr,xerr=self.xErr,elinewidth=self.errorbarThick)
+        if self.dataLog == 'None':
+            
+            resultAx.errorbar(self.xData,self.yData,fmt=self.dataMarker, color=self.dataColor,yerr=self.yErr,xerr=self.xErr,elinewidth=self.errorbarThick)
             resultAx.plot(xRange,yResult,color=self.fitColor,linestyle=self.fitLineStyle,linewidth=self.fitLineThick)
 
         elif self.dataLog == "x":
