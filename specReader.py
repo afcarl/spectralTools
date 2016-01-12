@@ -4,6 +4,7 @@ from copy import deepcopy
 import gc
 from spectralTools.models import modelLookup
 keV2erg =1.60217646e-9
+import numpy as np
 
 class specReader:
     '''
