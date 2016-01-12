@@ -1,8 +1,8 @@
 from tteBinning import tteBinning
 from glob import glob
-from numpy import logical_and, array, mean, histogram, arange, savez, load
+from numpy import logical_and, array, zeros, mean, histogram, arange, savez, load
 from spectralTools.step import Step
-
+import numexpr
 
 import matplotlib.pyplot as plt
 
@@ -41,8 +41,10 @@ class lightcurveMaker(object):
         self.tstop = self.data[0].header["TSTOP"]-self.trigTime
         self.det = self.data[0].header["DETNAM"]
         self.grb = self.data[0].header["OBJECT"]
+        
         self.emin = self.data[1].data["E_MIN"]
         self.emax = self.data[1].data["E_MAX"]
+        
 
 
         # Make a energy chan selection
@@ -81,7 +83,7 @@ class lightcurveMaker(object):
 
             self.dataBinner.MakeBlocks(.05)
             
-        
+        print "Fitting Background"
 
         self.dataBinner.MakeBackgroundSelectionsForDataBinner()
         self.dataBinner._FitBackground()
@@ -99,17 +101,31 @@ class lightcurveMaker(object):
         start = self.thisStart
         stop  = self.thisStop
 
-        start = self.tstart
-        stop  = self.tstop
+        #start = self.tstart
+        #stop  = self.tstop
 
 
         tc = []
         bc = []
         sc = []
-        be = []
-        
-        print start, stop        
+        #be = []
+
+
+        evts = self.evts
+        phas = self.data[2].data["PHA"]
+        #print start, stop        
         bins = self.dataBinner.bins
+
+
+        # Make the chan selects 1st!
+
+        chanTTs = []
+        #numexpr.set_num_threads(4)
+        for ch in range(128):
+            #chanTTs.append(numexpr.evaluate( 'phas == ch' )) 
+            chanTTs.append(phas == ch) 
+
+
         j=0
         for i in range(len(bins)-1):
             
@@ -118,35 +134,45 @@ class lightcurveMaker(object):
             
             if lob>=start and hib<=stop:
                 
-                bkgCounts = []
-                bkgError = []
+                bkgCounts = zeros(128)
+                #bkgError = zeros(128)
             
-                totalCounts = []
-            
+                totalCounts = zeros(128)
+
+
+                ## get evts between times:
+
+                tt2  = evts >= lob 
+                #tt2 = numexpr.evaluate('evts >= lob')
+                #tt3 = numexpr.evaluate('evts < hib')
+                #tt2 = numexpr.evaluate('tt3 & tt2')
+                tt2 = logical_and(tt2,self.evts <hib)
+
+                k=0 # Iterator for channels 
                 for ch in range(128):
                 
-                    tt = self.data[2].data["PHA"] == ch
-                
-                
-                    ## get evts between times:
-                    tt2 = self.evts >= lob
-                    tt2 = logical_and(tt2,self.evts <hib)
-                
-                    tt= logical_and(tt,tt2)
+                    #tt = self.data[2].data["PHA"] == ch
+                    #test = chanTTs[ch]
+
+                    #tt = numexpr.evaluate('test & tt2')
+                    tt= logical_and(chanTTs[ch],tt2)
                 
                     #Num total counts
                 
-                    totalCounts.append(len(self.evts[tt]))
-                    bkgCounts.append(self.bkgMods[ch].integral(lob,hib))
-                    bkgError.append(self.bkgMods[ch].integralError(lob,hib))
-                totalCounts =array(totalCounts)/(hib-lob)
-                bkgCounts=array(bkgCounts)/(hib-lob)
-                bkgError = array(bkgError)/(hib-lob)
+                    totalCounts[k] = len(evts[tt])
+                    bkgCounts[k] = self.bkgMods[ch].integral(lob,hib)
+                    #bkgError.append(self.bkgMods[ch].integralError(lob,hib))
+                    k+=1
+
+
+                totalCounts  = totalCounts/(hib-lob)
+                bkgCounts= bkgCounts/(hib-lob)
+                #bkgError = array(bkgError)/(hib-lob)
                 sourceCounts  = totalCounts  - bkgCounts
 
                 tc.append(totalCounts)
                 bc.append(bkgCounts)
-                be.append(bkgError)
+                #be.append(bkgError)
                 sc.append(sourceCounts)
 
 
@@ -155,14 +181,14 @@ class lightcurveMaker(object):
         self._tc = array(tc)
         self._bc = array(bc)
         self._sc = array(sc)
-        self._be = array(be)
+        #self._be = array(be)
 
 
         # Transpose the matricies into the right form
         self._tc = self._tc.T
         self._bc = self._bc.T
         self._sc = self._sc.T
-        self._be = self._be.T
+        #self._be = self._be.T
 
 
 
@@ -202,11 +228,11 @@ class lightcurveMaker(object):
         outFileName = "%s_%s_dt_%.2f"%(self.grb,self.det,self.binMeth)
 
 
-        savez(outFileName,total=self._tc,source=self._sc,bkg=self._bc,tbins=self.dataBinner.bins,be=self._be,emin=self.emin,emax=self.emax)
+        savez(outFileName,total=self._tc,source=self._sc,bkg=self._bc,tbins=self.dataBinner.bins,emin=self.emin,emax=self.emax)
         
 
 
-    def PlotData(self):
+    def PlotData(self,fignum=100):
 
         tBins = []
         for i in range(len(self.dataBinner.bins)-1):
@@ -220,7 +246,7 @@ class lightcurveMaker(object):
         maxCnts = max(cnts/self.dataBinner.binWidth)
         minCnts = min(cnts/self.dataBinner.binWidth) 
 
-        fig=plt.figure(666)
+        fig=plt.figure(fignum)
         ax=fig.add_subplot(111)
 
         Step(ax,tBins,cnts/self.dataBinner.binWidth,"k",.5)
@@ -323,7 +349,7 @@ class ProcessedLightCurve(object):
         self._tc = tmp["total"]
         self._sc = tmp["source"]
         self._bc = tmp["bkg"]
-        self._be = tmp["be"]
+#        self._be = tmp["be"]
         self._bins = tmp["tbins"]
         self.emin = tmp['emin']
         self.emax = tmp['emax']

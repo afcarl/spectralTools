@@ -41,7 +41,9 @@ class tteBinning(object):
         trigTime = header['TRIGTIME']
         start = header['TSTART'] - trigTime
         end = header['TSTOP'] - trigTime
-        
+
+        self.phas = fitsFile[2].data['PHA'] #Just added 23/10/2015
+                
         self.verbose = False
 
         self.fileStart = start
@@ -578,7 +580,7 @@ class tteBinning(object):
         print "Optimal poly grade: %d"% self.optimalPolGrade
 
 
-    def MakeBackgroundSelectionsForDataBinner(self):
+    def MakeBackgroundSelectionsForDataBinner(self,justOpt=False,emin=8,emax=300):
 
 
       
@@ -599,8 +601,15 @@ class tteBinning(object):
         evts = self.allEvts
         truthTables = []
 
-        
+        if justOpt:
+            hiChan = self._GetChannel(emax)
+            loChan = self._GetChannel(emin)
 
+            tvLo = self.phas >= loChan
+            tvHi = self.phas <= hiChan
+
+            chans = logical_and(tvLo,tvHi)
+            
 
 
 
@@ -618,9 +627,11 @@ class tteBinning(object):
                     
                 tt=logical_or(tt,y)
 
-
+        if justOpt:
+            tt = logical_and(tt,chans)
+            self.chanSel = chans
         filteredEvts = evts[tt]
-
+        
         self.filteredEvts = filteredEvts
        
         
@@ -638,11 +649,12 @@ class tteBinning(object):
         cnts = cnts/self.binWidth
 
         
-        self.optimalPolGrade           = self._fitGlobalAndDetermineOptimumGrade(cnts[tt],meanT[tt])
+        self.optimalPolGrade, optPoly = self._fitGlobalAndDetermineOptimumGrade(cnts[tt],meanT[tt])
         print "Optimal poly grade: %d"% self.optimalPolGrade
-
-
-     
+        if justOpt:
+            print "\n Returning Optimal Polynomila"
+            return optPoly
+            
         
 
 
@@ -742,7 +754,7 @@ class tteBinning(object):
 
 
 
-
+# I will have to fix this every where
 
     def _fitGlobalAndDetermineOptimumGrade(self,cnts,bins):
         #Fit the sum of all the channels to determine the optimal polynomial
@@ -764,8 +776,10 @@ class tteBinning(object):
         minGrade                  = 0
         maxGrade                  = 4
         logLikelihoods            = []
+        polys= []
         for grade in range(minGrade,maxGrade+1):      
           polynomial, logLike     = self._polyfit(bins,cnts,grade)
+          polys.append(polynomial)
           logLikelihoods.append(logLike)         
         pass
         #Found the best one
@@ -786,7 +800,7 @@ class tteBinning(object):
 
        
 
-        return bestGrade
+        return [bestGrade,polys[bestGrade]]
 
 
 
@@ -949,6 +963,37 @@ class tteBinning(object):
             bkg.append(b)
         meanT = array(map(mean,tBins))
         ax.plot(meanT,bkg,linewidth=2,color="r")
+
+
+
+    def _GetChannel(self,energy):
+        '''
+        Private function that finds the channel for a given energy
+
+        ____________________________________________________________
+        arguments:
+        energy: selection energy in keV
+
+        '''
+
+        emin = self.chanLU['E_MIN']
+        emax = self.chanLU['E_MAX']
+
+        
+        if energy < emin[0]:
+            return 0
+        elif energy > emax[-1]:
+            return len(emax)-1
+    
+
+        
+        ch = 0
+        for lo, hi in zip(emin,emax):
+
+            if energy >= lo and energy <= hi:
+                return ch
+            else:
+                ch+=1
 
 def mkdir_p(path):
     try:

@@ -183,7 +183,6 @@ class fluxLightCurve(object):
 
 
 
-   
     def FluxError(self, params, covar, currentModel):
         '''
         Params is a list of the params from each models

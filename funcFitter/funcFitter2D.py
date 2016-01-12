@@ -44,7 +44,8 @@ class funcFitter2D(funcFitter):
         self.limits=None
         self.fontsize=10
         self.pivot = 1.
-
+        self.elinewidth = .8
+        self.capsize=3
 
     def SetXErr(self,xErr):
         
@@ -63,7 +64,7 @@ class funcFitter2D(funcFitter):
         if self.dataLog == "None":
             #self.dataLog="No"
             self.xData = self.xData/self.pivot
-           # self.xErr = self.xErr/self.pivot
+            #self.xErr = self.xErr/self.pivot
             return
         
         elif self.dataLog == "x":
@@ -91,11 +92,19 @@ class funcFitter2D(funcFitter):
         resultAx = resultFig.add_subplot(111)
         self.ax = resultAx
         xRange = linspace(self.dataMin,self.dataMax,100)
-        yGuess = self.fitFunc(xRange,*self.iVals)
+        if self.dataLog=='all':
+            
+            yGuess =self.fitFunc(log10(xRange)-log10(self.pivot),*self.iVals)
 
         if showGuess:
-            resultAx.plot(xRange,yGuess,color=self.guessColor,linestyle=self.fitLineStyle,linewidth=self.fitLineThick)
-    
+
+            
+            
+            resultAx.loglog((xRange),10**(yGuess),color=self.guessColor,linestyle=self.fitLineStyle,linewidth=self.fitLineThick)
+            
+            
+
+            
         fixslope=False
         fixint=False
         if self.fixed[0]==1.:
@@ -121,7 +130,7 @@ class funcFitter2D(funcFitter):
         #print errors
         #self.xData = self.xData*self.pivot
         print "\nFit results: "
-                
+        print params       
         try:
             for x,y,z in zip(self.params, params, errors):
                 print x+": "+str(y)+" +/- "+str(z)

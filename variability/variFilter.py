@@ -3,6 +3,7 @@ from scipy.stats import pearsonr
 
 #from spectralTools.lightCurve_data import lightCurve_data as LCD
 from spectralTools.binning.lightcurveMaker import ProcessedLightCurve
+from spectralTools.binning.lightcurveMaker_summed import ProcessedLightCurve_summed
 
 from numpy import logspace, array, log10, sqrt, r_, zeros, arange, log, log10
 from numpy.random import normal
@@ -10,7 +11,7 @@ from numpy.random import normal
 class variFilter(object):
 
 
-    def __init__(self,dataFile,tstart=0.,tstop=10.,emin=8.,dt=.1,emax=300.,order=3,fType="lowpass",fmin=1E-3,fmax=1.):
+    def __init__(self,dataFile,tstart=0.,tstop=10.,emin=8.,dt=.1,emax=300.,order=3,fType="lowpass",fmin=1E-3,fmax=1.,presummed=True):
 
 
 
@@ -26,7 +27,7 @@ class variFilter(object):
         self.fmin = fmin #Freq search range
         self.fmax = fmax
     
-        
+        self.presummed = presummed
 
         self.dataFile = dataFile
 
@@ -39,13 +40,17 @@ class variFilter(object):
 
 
         
+        if self.presummed:
+            plc = ProcessedLightCurve_summed(self.dataFile)
+            plc.SetTime(self.tstart,self.tstop)
+            self._counts = plc.GetSourceSummedLC()
+        else:    
+            plc = ProcessedLightCurve(self.dataFile)
+            plc.SetTime(self.tstart,self.tstop)
+            self._counts = plc.GetSourceSummedLC(self.emin,self.emax)
 
-        plc = ProcessedLightCurve(self.dataFile)
-        plc.SetTime(self.tstart,self.tstop)
-        
-
-        self._counts = plc.GetSourceSummedLC(self.emin,self.emax)
-
+        whereZero = self._counts < 0.     
+        #self._counts[whereZero] = 0.    
         #self._time = lc.GetTime()
 
 
@@ -139,7 +144,7 @@ class variFilter(object):
             simLC.append(map(self._genCount,self._counts))
 
         simLC = array(simLC)
-
+        #self.simLC = simLC
 
         fGrid = logspace(log10(self.fmin),log10(self.fmax),100)
         fHist = zeros(len(fGrid))
@@ -163,7 +168,8 @@ class variFilter(object):
             test[-1] = False
             fHist[test]+=1.
 
-        self.fHist=fHist/Nsim
+        
+        self.fHist=fHist/float(Nsim)
     
         
     def _genCount(self,x):
