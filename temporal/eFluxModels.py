@@ -34,6 +34,16 @@ def Compt(x,A,Ep,index,Epiv):
 	return x*A*exp(-x*(2+index)/Ep )*power(x/Epiv,index)
 
 
+def PowerLaw_nopiv(x, A, index):
+
+    Epiv=100.
+    return x*A*(x/Epiv)**index
+
+def Compt_nopiv(x,A,Ep,index):
+    Epiv=100
+	return x*A*exp(-x*(2+index)/Ep )*power(x/Epiv,index)
+
+
 #### Synchrotron with pygsl
 
 def TotalSynchrotron(x, A, eCrit, eta, index, gammaTh):
@@ -109,4 +119,4 @@ def BrokenPL(x, A, pivot, index1, breakE, index2):
 
 
 modelLookup = {"Power Law w. 2 Breaks":PowerLaw2Breaks, "Band's GRB, Epeak": Band, "Total Test Synchrotron": TotalSynchrotron, "Black Body": BlackBody,\
-		"Comptonized, Epeak": Compt, "Power Law": PowerLaw,"Black Body B": BlackBody, "Broken Power Law": BrokenPL, "BlackBody2":BlackBody }
+		"Comptonized, Epeak": Compt, "Power Law": PowerLaw,"Black Body B": BlackBody, "Broken Power Law": BrokenPL, "BlackBody2":BlackBody,"Comptonized, Epeak np": Compt_nopiv, "Power Law np": PowerLaw_nopiv }
