@@ -286,7 +286,30 @@ class CreateFitFiles(object):
         covars = np.genfromtxt(self.covarFile)
         
         
-        self.covars = np.array(map(lambda x: x[4:].reshape((self.nParams+self.numEAC,self.nParams+self.numEAC)),covars))
+        covars = np.array(map(lambda x: x[4:].reshape((self.nParams+self.numEAC,self.nParams+self.numEAC)),covars))
+        tmp = []
+
+
+        tmpP = np.zeros((len(covars),self.nParams+self.numEAC))
+        for i in range(len(self.models)):
+            for j in range(len(self.paramErrors[i])):
+                for k in range(len(self.paramErrors[i][j])):
+                    tmpP[j,i+k+i*1] = self.paramErrors[i][j][k]
+        
+        
+        for i in range(len(covars)):
+            for j in range(self.numEAC):
+                tmpP[j,self.nParams+j] = self.eacErr[i,j]
+        
+            
+            
+
+        self.covars = []
+        for cv,p in zip(covars,tmpP):
+            cv=np.matrix(cv)
+
+            cv = array(np.diag(p) * cv * np.diag(p))
+            self.covars.append(cv)
         
         
     def _ReadParams(self):
@@ -341,8 +364,9 @@ class CreateFitFiles(object):
         '''
         
         self._ReadEAC()
-        self._ReadCovar()
         self._ReadParams()
+        self._ReadCovar()
+        
         
         np.savez_compressed(self.filename,
                             tBins=self.tBins,
