@@ -40,8 +40,8 @@ def PowerLaw_nopiv(x, A, index):
     return x*A*(x/Epiv)**index
 
 def Compt_nopiv(x,A,Ep,index):
-    Epiv=100
-	return x*A*exp(-x*(2+index)/Ep )*power(x/Epiv,index)
+    Epiv=100.
+    return x*A*exp(-x*(2+index)/Ep )*power(x/Epiv,index)
 
 
 #### Synchrotron with pygsl
