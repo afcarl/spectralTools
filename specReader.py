@@ -75,12 +75,16 @@ class specReader:
         paramArr = deepcopy(self.models[model]['values'][param])
         paramErrplus = deepcopy(self.models[model]['+'][param])
         paramErrminus = deepcopy(self.models[model]['-'][param])
-        tmp = asarray([paramArr,paramErrminus,paramErrplus]).transpose()
+        tmp = Table(asarray([paramArr,paramErrminus,paramErrplus]).transpose(),names=[param,"+","-"])
         #tmp.dtype = dtype([(float,'value'),(float,'error')])
         return tmp
         
 
+    def GetTime(self):
 
+
+        tmp = Table(array(zip(self.meanTbins,self.tBins[:,0],self.tBins[:,1])),names=["t","tstart","tstop"] )
+        return tmp
 
     def __repr__(self):
 
@@ -377,7 +381,7 @@ class CompReader(CreateFitFiles):
         self.params = [['norm','epeak','alpha']]
         self.rmfitParams=[["Amplitude","Epeak","Index",]]
         self.nParams = 3
-        self.models=array(["Comptonized, Epeak"])
+        self.models=array(["Comptonized, Epeak np"])
         self.filename =filename
 class PLReader(CreateFitFiles):
     
@@ -386,7 +390,7 @@ class PLReader(CreateFitFiles):
         self.params = [['norm','alpha']]
         self.rmfitParams=[["Amplitude","Index"]]
         self.nParams = 2
-        self.models=array(["Power Law"])
+        self.models=array(["Power Law np"])
         self.filename =filename
 class PLBBReader(CreateFitFiles):
     
@@ -395,7 +399,7 @@ class PLBBReader(CreateFitFiles):
         self.params = [['norm','alpha'],["ktnorm","kt"]]
         self.rmfitParams=[["Amplitude","Index"],["Amplitude","kT"]]
         self.nParams = 4
-        self.models=array(["Power Law","Black Body"])
+        self.models=array(["Power Law np","Black Body"])
         self.filename =filename
         
 class BandBBReader(CreateFitFiles):
