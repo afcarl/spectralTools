@@ -5,7 +5,7 @@ from spectralTools.models import modelLookup
 from eFluxModels import modelLookup as eFluxLookup
 from spectralTools.scatReader import scatReader
 from scipy.integrate import quad, quadrature
-from numpy import array, sqrt, zeros, vstack
+from numpy import array, sqrt, zeros, vstack, asarray
 import pickle
 
 
@@ -104,7 +104,11 @@ class fluxLightCurve(object):
     def CalculateFlux(self,modelName,params):
         
         model = self.modelDict[modelName]
-        
+        if type(params[0].tolist()) == list:
+                
+                args = params[0].tolist()
+        else:
+            args = tuple(params)
         if (modelName == 'Band\'s GRB, Epeak') or (modelName =='Power Law w. 2 Breaks') or (modelName =='Broken Power Law'):
             
 
@@ -121,7 +125,11 @@ class fluxLightCurve(object):
     def CalculateFlux_vFvPeak(self,modelName,params):
         
         model = self.modelDict[modelName]
-        
+        if type(params[0].tolist()) == list:
+                
+                args = params[0].tolist()
+        else:
+            args = tuple(params)
         if (modelName == "Band\'s GRB, Epeak"):
             
             peak = params[0][1]
@@ -143,15 +151,26 @@ class fluxLightCurve(object):
     def CalculateEnergyFlux(self,modelName,params):
 
         model = self.eFluxModels[modelName]
+        #self.shit=params
+        #print params
+        try:
+           args=params.tolist()
+                
+        except(AttributeError):
+  
+            args = tuple(params)
         
         if (modelName == 'Band\'s GRB, Epeak') or (modelName =='Power Law w. 2 Breaks') or (modelName =='Broken Power Law'):
+
             
-            val,_, = quadrature(model, self.eMin,self.eMax,args=params[0].tolist(),tol=1.49e-10, rtol=1.49e-10, maxiter=200)
+            
+            
+            val,_, = quadrature(model, self.eMin,self.eMax,args=args,tol=1.49e-10, rtol=1.49e-10, maxiter=200)
             val = val*keV2erg
             return val
             
 
-        val,_, = quad(model, self.eMin,self.eMax,args=params[0].tolist(), epsabs=0., epsrel= 1.e-5 )
+        val,_, = quad(model, self.eMin,self.eMax,args=args, epsrel= 1.e-5 )
 
         
         val = val*keV2erg
@@ -165,7 +184,11 @@ class fluxLightCurve(object):
     def CalculateEnergyFlux_kCor(self,modelName,params):
 
         model = self.eFluxModels[modelName]
-        
+        if type(params[0].tolist()) == list:
+                
+                args = params[0].tolist()
+        else:
+            args = tuple(params)
         if (modelName == 'Band\'s GRB, Epeak') or (modelName =='Power Law w. 2 Breaks') or (modelName =='Broken Power Law'):
             
             val,_, = quadrature(model, self.eMin,self.eMax,args=params[0].tolist(),tol=1.49e-10, rtol=1.49e-10, maxiter=200)
@@ -247,11 +270,12 @@ class fluxLightCurve(object):
         firstDerivates = []
         
         for modName,par, z  in zip(self.scat.modelNames,params, self.scat.paramNames):
+            
             for parName in z:
 
                 def tmpFlux(currentPar):
 
-                    tmpParams = par.copy()
+                    tmpParams = asarray(par).copy()
 
                     tmpParams[parName]=currentPar
 
@@ -627,7 +651,7 @@ class fluxLightCurve(object):
         
         individualFluxError.append ( map(lambda par,cov:self.EnergyFluxError(par,cov,"total"), tmpParamArray,self.covars  ))
         #self.fluxErrors= map(lambda par,cov:self.FluxError(par,cov,"total"), tmpParamArray,self.covars  )
-        self.energyFluxErrors=dict(zip(self.modelNames+['total'],individualFluxError))        
+        self.energyFluxErrors=dict(zip(list(self.modelNames)+['total'],individualFluxError))        
 
 
 
