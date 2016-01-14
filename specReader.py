@@ -351,7 +351,7 @@ class CreateFitFiles(object):
         eacErr=[]
         for x in eacs:
             eac.append(x[4::2].tolist())
-            eacErr.append(x[4::2].tolist())
+            eacErr.append(x[5::2].tolist())
         self.eac=np.array(eac)
         self.eacErr=np.array(eacErr) 
         
