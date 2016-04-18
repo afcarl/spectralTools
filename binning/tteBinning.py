@@ -15,7 +15,7 @@ from step import Step
 class tteBinning(object):
 
 
-    def __init__(self, tteFile, tStart, tStop, bkgIntervals = None):
+    def __init__(self, tteFile, tStart, tStop, bkgIntervals = None,trig=None):
 
 
 
@@ -38,7 +38,11 @@ class tteBinning(object):
         evts = fitsFile[2].data['TIME']
 
         header = fitsFile[0].header
-        trigTime = header['TRIGTIME']
+        if trig==None:
+            trigTime = header['TRIGTIME']
+        else:
+            trigTime = trig
+            
         start = header['TSTART'] - trigTime
         end = header['TSTOP'] - trigTime
 

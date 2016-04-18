@@ -63,6 +63,8 @@ class scatReader:
 
         self.phtFlux = self.scat[2].data['PHTFLUX']
         self.phtFluence = self.scat[2].data['PHTFLNC']
+        self.eneFlux = self.scat[2].data['NRGFLUX']
+        self.eneFluence = self.scat[2].data['NRGFLNC']
         self.covars = self.scat[2].data['COVARMAT']
         
         self.dof = array(map(float,(self.scat[2].data['CHSQDOF'])))

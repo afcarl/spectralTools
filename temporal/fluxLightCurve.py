@@ -117,7 +117,7 @@ class fluxLightCurve(object):
             return val
             
         
-        val,_, = quad(model, self.eMin,self.eMax,args=params[0].tolist(),epsabs=0., epsrel= 1.e-5 )
+        val,_, = quad(model, self.eMin,self.eMax,args=params[0].tolist(),epsabs=1.49e-08, epsrel= 1.e-5 )
 
         return val
 
@@ -159,7 +159,7 @@ class fluxLightCurve(object):
         except(AttributeError):
   
             args = tuple(params)
-        
+        #print args
         if (modelName == 'Band\'s GRB, Epeak') or (modelName =='Power Law w. 2 Breaks') or (modelName =='Broken Power Law'):
 
             
@@ -170,7 +170,7 @@ class fluxLightCurve(object):
             return val
             
 
-        val,_, = quad(model, self.eMin,self.eMax,args=args, epsrel= 1.e-5 )
+        val,_, = quad(model, self.eMin,self.eMax,args=args[0], epsrel= 1.e-8 )
 
         
         val = val*keV2erg
@@ -196,7 +196,7 @@ class fluxLightCurve(object):
             return val
             
 
-        val,_, = quad(model, self.eMin/(1.+self.z),self.eMax/(1.+self.z),args=params[0].tolist(), epsabs=0., epsrel= 1.e-5 )
+        val,_, = quad(model, self.eMin/(1.+self.z),self.eMax/(1.+self.z),args=params[0].tolist(), epsabs=1.49e-08, epsrel= 1.e-5 )
 
         
         val = val*keV2erg
@@ -477,7 +477,7 @@ class fluxLightCurve(object):
             tmp = []
 
             for pars in self.scat.models[x]['values']:
-                
+                #print pars
                 flux = self.CalculateEnergyFlux(x,pars)
                 tmp.append(flux)
                 i=i+1
